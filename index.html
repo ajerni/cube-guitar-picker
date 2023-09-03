@@ -10,6 +10,39 @@
       new Frame({ ready: ready });
 
       function ready() {
+        // 4 Three steps for every ZIM 'element' in THREE:
+        //  1. make a TextureActive
+        //  2. create the content(s) and add it to the TextureActive (container)
+        //  3. 'Register' the TextureActive in TextureActives
+        //  4. makePanel to create the mesh and add it to the three scene
+
+        //TITLE LabelLetters
+
+        const title_ta = new TextureActive({
+          width: 870,
+          height: 140,
+          color: white.toAlpha(0.5), //clear
+        });
+        var label = `<font color=red size=70 family=verdana><strong>Guitar Picker</strong></font>`;
+
+        var letters = new LabelLetters({
+          label: label,
+          align: LEFT,
+          valign: CENTER, //BOTTOM,
+          letterSpacing: 10,
+          lineSpacing: 10,
+          lineAlign: CENTER,
+        })
+          .center(title_ta)
+          .animate({
+            props: { scaleY: 1.4 },
+            wait: 0.1,
+            time: 0.55,
+            sequence: 0.75,
+            rewind: true,
+            loop: true,
+          });
+
         // Make TextureActive
         const hud_ta = new TextureActive(400, 155, clear);
 
@@ -90,13 +123,14 @@
         const spinbutton = new TextureActive({
           width: 370,
           height: 70,
-          color: white.toAlpha(0.5),
+          color: clear, //white.toAlpha(0.5),
         });
 
         const b = new Button({
           width: 370,
           height: 70,
-          label: "spin",
+          label: "S P I N",
+          bold: true,
           corner: 10,
           backgroundColor: green,
           color: white,
@@ -150,7 +184,7 @@
         };
 
         const textureActives = new TextureActives({
-          actives: [slider, slider2, spinbutton, hud_ta, bg_ta],
+          actives: [slider, slider2, spinbutton, hud_ta, bg_ta, title_ta],
           threejs: THREE,
           zimThree: three,
           renderer: renderer,
@@ -186,6 +220,11 @@
           .makePanel(spinbutton, textureActives)
           .pos(-440, 0, CENTER, CENTER, 0);
         sceneOrtho.add(buttonMesh);
+
+        const titleMesh = three
+          .makePanel(title_ta, textureActives)
+          .pos(50, 50, LEFT, TOP, 0);
+        sceneOrtho.add(titleMesh);
 
         // CUBE
         const geometry = new THREE.BoxGeometry(210, 210, 210);
