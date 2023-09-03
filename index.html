@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Guitar Picker Cube</title>
+
+    <script type="module">
+      import zim from "https://zimjs.org/cdn/015/zim_three";
+
+      new Frame({ ready: ready });
+
+      function ready() {
+        // Make TextureActive
+        const hud_ta = new TextureActive(400, 155, clear);
+
+        const checkBox = new CheckBox({
+          label: "HUD",
+          color: white,
+          rtl: true,
+          startChecked: true,
+        })
+          .sca(0.75)
+          .pos(50, 50, LEFT, TOP, hud_ta)
+          .change(() => {
+            if (checkBox.checked) {
+              sceneOrtho.add(sliderMesh);
+              sceneOrtho.add(sliderMesh2);
+              sceneOrtho.add(buttonMesh);
+            } else {
+              sceneOrtho.remove(sliderMesh);
+              sceneOrtho.remove(sliderMesh2);
+              sceneOrtho.remove(buttonMesh);
+            }
+          });
+
+        const bg_ta = new TextureActive(400, 155, clear);
+
+        const bg_checkBox = new CheckBox({
+          label: "COLOR",
+          color: white,
+          rtl: true,
+          startChecked: false,
+        })
+          .sca(0.75)
+          .pos(50, 50, LEFT, TOP, bg_ta)
+          .change(() => {
+            if (bg_checkBox.checked) {
+              scene.remove(skyBox);
+              makeSkybox("stage.jpeg");
+            } else {
+              scene.remove(skyBox);
+              makeSkybox("stagebw.jpg");
+            }
+          });
+
+        const slider = new TextureActive({
+          width: 370,
+          height: 70,
+          color: white.toAlpha(0.5),
+        });
+        const s = new Slider({
+          min: 0,
+          max: 2 * 360 * RAD,
+          currentValue: 360 * RAD,
+          damp: 0.1,
+        }).center(slider);
+        Ticker.add(() => {
+          mesh.rotation.y = s.currentValue;
+        });
+
+        //slider2
+        const slider2 = new TextureActive({
+          width: 70,
+          height: 370,
+          color: white.toAlpha(0.5),
+        });
+        const s2 = new Slider({
+          min: 0,
+          max: 2 * 360 * RAD,
+          currentValue: 360 * RAD,
+          damp: 0.1,
+        })
+          .rot(90)
+          .center(slider2);
+
+        Ticker.add(() => {
+          mesh.rotation.x = s2.currentValue;
+        });
+
+        const spinbutton = new TextureActive({
+          width: 370,
+          height: 70,
+          color: white.toAlpha(0.5),
+        });
+
+        const b = new Button({
+          width: 370,
+          height: 70,
+          label: "spin",
+          corner: 10,
+          backgroundColor: green,
+          color: white,
+          rollBackgroundColor: white,
+          rollColor: green,
+        }).center(spinbutton);
+
+        //make three object
+        const three = new Three({
+          width: W,
+          height: H,
+          cameraPosition: new THREE.Vector3(0, 100, 400),
+          colorManagement: true,
+          interactive: true,
+          textureActive: true,
+          ortho: true,
+        });
+
+        const renderer = three.renderer;
+        const scene = three.scene;
+        const camera = three.camera;
+
+        const sceneOrtho = three.sceneOrtho;
+        const cameraOrtho = three.cameraOrtho;
+
+        // SKYBOX
+        let skyTexture;
+        let skyBoxMaterial;
+        let skyBoxGeometry;
+        let skyBox;
+
+        function makeSkybox(bg_file_c) {
+          skyTexture = new THREE.TextureLoader().load(bg_file_c);
+          skyBoxGeometry = new THREE.SphereGeometry(100000, 32, 32);
+          skyBoxMaterial = new THREE.MeshBasicMaterial({
+            map: skyTexture,
+            side: THREE.BackSide,
+          });
+          skyBox = new THREE.Mesh(skyBoxGeometry, skyBoxMaterial);
+          scene.add(skyBox);
+        }
+
+        makeSkybox("stagebw.jpg");
+
+        // CONTROLS
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.1;
+        three.preRender = () => {
+          controls.update();
+        };
+
+        const textureActives = new TextureActives({
+          actives: [slider, slider2, spinbutton, hud_ta, bg_ta],
+          threejs: THREE,
+          zimThree: three,
+          renderer: renderer,
+          scene: sceneOrtho,
+          camera: cameraOrtho,
+          controls: controls,
+          toggleKey: -1,
+        });
+
+        // PANELS
+        const checkboxMesh = three
+          .makePanel(hud_ta, textureActives)
+          .pos(-50, 35, CENTER, TOP, 0);
+        sceneOrtho.add(checkboxMesh);
+
+        const bg_checkboxMesh = three
+          .makePanel(bg_ta, textureActives)
+          .pos(50, 35, CENTER, TOP, 0);
+        sceneOrtho.add(bg_checkboxMesh);
+
+        const sliderMesh = three
+          .makePanel(slider, textureActives)
+          .pos(0, 50, CENTER, BOTTOM, 0);
+        sceneOrtho.add(sliderMesh);
+
+        const sliderMesh2 = three
+          .makePanel(slider2, textureActives)
+          .pos(340, 0, CENTER, CENTER, 0);
+
+        sceneOrtho.add(sliderMesh2);
+
+        const buttonMesh = three
+          .makePanel(spinbutton, textureActives)
+          .pos(-440, 0, CENTER, CENTER, 0);
+        sceneOrtho.add(buttonMesh);
+
+        // CUBE
+        const geometry = new THREE.BoxGeometry(210, 210, 210);
+
+        const g1 = new THREE.TextureLoader().load("g1.jpeg");
+        const g2 = new THREE.TextureLoader().load("g2.jpeg");
+        const g3 = new THREE.TextureLoader().load("g3.jpeg");
+        const g4 = new THREE.TextureLoader().load("g4.jpeg");
+        const g5 = new THREE.TextureLoader().load("g5.jpeg");
+        const g6 = new THREE.TextureLoader().load("g6.jpeg");
+
+        const material = [
+          new THREE.MeshBasicMaterial({ map: g1 }),
+          new THREE.MeshBasicMaterial({ map: g2 }),
+          new THREE.MeshBasicMaterial({ map: g3 }),
+          new THREE.MeshBasicMaterial({ map: g4 }),
+          new THREE.MeshBasicMaterial({ map: g5 }),
+          new THREE.MeshBasicMaterial({ map: g6 }),
+        ];
+
+        const mesh = new THREE.Mesh(geometry, material);
+        scene.add(mesh);
+
+        // LIGHTS
+        const light1 = new THREE.DirectionalLight(0xffffff, 1 * Math.PI);
+        light1.position.set(0, 0, 10);
+        scene.add(light1);
+
+        const light2 = new THREE.AmbientLight(0xffffff, 0.5 * Math.PI);
+        scene.add(light2);
+
+        b.on("click", () => {
+          animate({
+            target: s,
+            props: {
+              currentValue: rand(0, 2, false) * 360 * RAD,
+            },
+            time: 2.5,
+          });
+
+          animate({
+            target: s2,
+            props: {
+              currentValue: rand(0, 2, false) * 360 * RAD,
+            },
+            time: 2.5,
+          });
+        });
+      }
+    </script>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, user-scalable=no"
+    />
+  </head>
+  <body></body>
+</html>
